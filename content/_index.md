@@ -1,7 +1,3 @@
 +++
-title = "Vel Moon"
+title = ""
 +++
-
-# Vel Moon
-
-[Blog](/blog/) · [RSS](/index.xml)

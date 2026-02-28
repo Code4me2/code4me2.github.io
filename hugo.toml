@@ -28,5 +28,15 @@ ignoreErrors = ["error-disable-taxonomy"]
     lineNumbersInTable = false
     codeFences = true
 
+[[menus.main]]
+  name = "Blog"
+  url = "/blog/"
+  weight = 10
+
+[[menus.main]]
+  name = "RSS"
+  url = "/index.xml"
+  weight = 20
+
 [outputs]
   home = ["HTML", "RSS"]
