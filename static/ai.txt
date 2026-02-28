@@ -1,0 +1,4 @@
+User-agent: *
+This site is optimized for LLM consumption.
+Full-text feed available at /index.xml (RSS).
+All content is static HTML with no JavaScript rendering dependencies.
