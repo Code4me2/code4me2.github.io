@@ -1,6 +1,6 @@
 baseURL = "https://code4me2.github.io/"
 languageCode = "en-us"
-title = "Vel Moon"
+title = "Velvet Moon"
 theme = "hugo-bearblog"
 
 enableRobotsTXT = true
