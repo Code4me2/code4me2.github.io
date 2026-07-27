@@ -29,6 +29,11 @@ ignoreErrors = ["error-disable-taxonomy"]
     codeFences = true
 
 [[menus.main]]
+  name = "Portfolio"
+  url = "/vel/"
+  weight = 5
+
+[[menus.main]]
   name = "Blog"
   url = "/blog/"
   weight = 10

@@ -1,0 +1,4 @@
+{{ range .Site.Menus.main }}
+{{- $current := or ($.IsMenuCurrent "main" .) ($.HasMenuCurrent "main" .) (and (eq .Name "Blog") (eq $.Section "blog")) -}}
+<a class="nav-link nav-link--{{ .Name | urlize }}{{ if $current }} is-active{{ end }}" href="{{ .URL }}"{{ if $current }} aria-current="page"{{ end }}>{{ .Name }}</a>
+{{ end }}
