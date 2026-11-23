@@ -1,0 +1,366 @@
+<div class="ibd-wrap" style='font:14px/1.5 "Helvetica Neue",Arial,sans-serif'>
+<style>
+
+  .ibd-wrap {
+    --ibd-grid: #e1e0d9; --ibd-grid-edge: #cfcec6;
+    --ibd-ink: #5f5e5a; --ibd-ink-strong: #1c1c1a;
+    --ibd-dot-stroke: rgba(28, 28, 26, 0.35);
+    --ibd-closed: #b4b2a9; --ibd-closed-stroke: #888780;
+    --ibd-tip-bg: #fff; --ibd-tip-border: #d9d8d0; --ibd-tip-shadow: rgba(0, 0, 0, 0.08);
+    --ibd-seg-bg: #fff; --ibd-seg-border: #d9d8d0;
+    --ibd-seg-text: #5f5e5a; --ibd-seg-on-bg: #1c1c1a; --ibd-seg-on-text: #fafaf8;
+  }
+  [data-theme="dark"] .ibd-wrap {
+    --ibd-grid: #2d2c29; --ibd-grid-edge: #3b3a36;
+    --ibd-ink: #a8a6a3; --ibd-ink-strong: #e8e6e1;
+    --ibd-dot-stroke: rgba(232, 230, 225, 0.4);
+    --ibd-closed: #55534e; --ibd-closed-stroke: #7a7873;
+    --ibd-tip-bg: #1e1e1c; --ibd-tip-border: rgba(255, 255, 255, 0.15); --ibd-tip-shadow: rgba(0, 0, 0, 0.5);
+    --ibd-seg-bg: #1a1a1a; --ibd-seg-border: rgba(255, 255, 255, 0.12);
+    --ibd-seg-text: #a8a6a3; --ibd-seg-on-bg: #55534e; --ibd-seg-on-text: #f0efea;
+  }
+  .ibd-wrap figure { margin: 0; }
+  .ibd { position: relative; }
+  .ibd svg { width: 100%; height: auto; display: block; }
+  .ibd-ready svg { cursor: grab; touch-action: pan-y; }
+  .ibd-grabbing svg { cursor: grabbing; }
+  .ibd .gl { stroke: var(--ibd-grid); stroke-width: 1; fill: none; }
+  .ibd .ge { stroke: var(--ibd-grid-edge); }
+  .ibd .tail { stroke-width: 1; opacity: 0.35; fill: none; }
+  .ibd .dot { stroke: var(--ibd-dot-stroke); stroke-width: 1; }
+  .ibd .dot.dim { fill: var(--ibd-closed); stroke: var(--ibd-closed-stroke); }
+  .ibd .hit { fill: transparent; stroke: none; }
+  .ibd .pt { outline: none; }
+  .ibd .pt.hot .dot, .ibd .pt:focus-visible .dot { stroke: var(--ibd-ink-strong); stroke-width: 1.6; opacity: 1; }
+  .ibd .tick { font: 14px "Helvetica Neue", Arial, sans-serif; fill: var(--ibd-ink); }
+  .ibd .title { font: 15px "Helvetica Neue", Arial, sans-serif; fill: var(--ibd-ink); }
+  .ibd .te { text-anchor: end; }
+  .ibd-tip { position: absolute; z-index: 2; pointer-events: none; background: var(--ibd-tip-bg);
+    border: 1px solid var(--ibd-tip-border); border-radius: 6px; box-shadow: 0 2px 10px var(--ibd-tip-shadow);
+    padding: 8px 10px; font-size: 12px; line-height: 1.45; max-width: 330px; color: inherit; }
+  .ibd-head { display: flex; padding: 0 44px 8px 0; }
+  .ibd-seg { display: inline-flex; border: 1px solid var(--ibd-seg-border); border-radius: 7px;
+    background: var(--ibd-seg-bg); padding: 2px; font: 12px "Helvetica Neue", Arial, sans-serif; }
+  .ibd-seg label { position: relative; }
+  .ibd-seg input { position: absolute; opacity: 0; inset: 0; margin: 0; }
+  .ibd-seg span { display: block; padding: 4px 11px; border-radius: 5px; color: var(--ibd-seg-text); cursor: pointer; user-select: none; }
+  .ibd-seg label:has(input:checked) span { background: var(--ibd-seg-on-bg); color: var(--ibd-seg-on-text); }
+  .ibd-seg label:has(input:disabled) span { cursor: default; opacity: 0.55; }
+  .ibd-seg input:focus-visible + span { outline: 2px solid #2a78d6; outline-offset: 1px; }
+  .ibd-playback { position: absolute; top: 4px; right: 4px; display: none;
+    border: 1px solid var(--ibd-seg-border); background: var(--ibd-seg-bg); border-radius: 6px; cursor: pointer;
+    font: 11px "Helvetica Neue", Arial, sans-serif; color: var(--ibd-seg-text); padding: 4px 9px; }
+  .ibd-playback:disabled { opacity: 0.5; cursor: default; }
+  .ibd-js .ibd-playback { display: block; }
+  .ibd-playback[data-playback="paused"]::before { content: "▶ play"; }
+  .ibd-playback[data-playback="playing"]::before { content: "… playing"; }
+  .ibd-playback[data-playback="finished"]::before { content: "↻ replay"; }
+  .ibd-benchmarks { font: 11.5px "Helvetica Neue", Arial, sans-serif; color: var(--ibd-ink);
+    padding-top: 6px; margin: 0; }
+</style>
+
+<figure id="fig:intelligence-density">
+  <div class="ibd" data-ibd-root role="group" aria-label="Scatter of model release date against mean benchmark score, revealing a third axis of parameter count and the gap between total and active parameters">
+    <div class="ibd-head">
+      <div class="ibd-seg" role="radiogroup" aria-label="Parameter axis shows">
+        <label><input type="radio" name="ibd-mode" value="total" checked disabled><span>Total parameters</span></label>
+        <label><input type="radio" name="ibd-mode" value="active" disabled><span>Active parameters</span></label>
+      </div>
+    </div>
+    <svg viewBox="0 0 940 640" role="img" aria-label="Models from August to November 2026 plotted by release date and mean percentage of the frontier score across five benchmarks. The figure then rotates into a third axis, parameter count on a log scale; a toggle slides each open-weights model from its total parameter count to its active count, trailing a thin tail whose length is its sparsity. Hover any point for its lab, sizes and per-benchmark scores.">
+      <g data-scene><g class="grid" aria-hidden="true"><line x1="253.4" y1="449.2" x2="480.0" y2="378.3" class="gl"/><line x1="480.0" y1="378.3" x2="480.6" y2="156.7" class="gl"/><line x1="304.9" y1="472.8" x2="532.9" y2="394.5" class="gl"/><line x1="532.9" y1="394.5" x2="536.5" y2="163.0" class="gl"/><line x1="362.4" y1="499.3" x2="590.8" y2="412.4" class="gl"/><line x1="590.8" y1="412.4" x2="598.1" y2="170.1" class="gl"/><line x1="427.1" y1="529.0" x2="654.7" y2="432.0" class="gl"/><line x1="654.7" y1="432.0" x2="666.4" y2="177.9" class="gl"/><line x1="243.8" y1="444.7" x2="470.0" y2="375.2" class="gl"/><line x1="470.0" y1="375.2" x2="696.2" y2="444.7" class="gl"/><line x1="241.1" y1="397.4" x2="470.0" y2="335.1" class="gl"/><line x1="470.0" y1="335.1" x2="698.9" y2="397.4" class="gl"/><line x1="238.4" y1="348.9" x2="470.0" y2="294.2" class="gl"/><line x1="470.0" y1="294.2" x2="701.6" y2="348.9" class="gl"/><line x1="235.6" y1="299.2" x2="470.0" y2="252.5" class="gl"/><line x1="470.0" y1="252.5" x2="704.4" y2="299.2" class="gl"/><line x1="232.7" y1="248.4" x2="470.0" y2="209.9" class="gl"/><line x1="470.0" y1="209.9" x2="707.3" y2="248.4" class="gl"/><line x1="229.8" y1="196.2" x2="470.0" y2="166.4" class="gl"/><line x1="470.0" y1="166.4" x2="710.2" y2="196.2" class="gl"/><line x1="243.8" y1="444.7" x2="470.0" y2="548.7" class="gl ge"/><line x1="243.8" y1="444.7" x2="229.0" y2="183.0" class="gl ge"/></g><g class="grid gfade" aria-hidden="true" style="opacity:1.000"><line x1="252.9" y1="441.9" x2="479.5" y2="544.4" class="gl"/><line x1="252.9" y1="441.9" x2="238.8" y2="181.9" class="gl"/><line x1="292.6" y1="429.7" x2="520.4" y2="525.6" class="gl"/><line x1="292.6" y1="429.7" x2="281.5" y2="177.0" class="gl"/><line x1="326.9" y1="419.2" x2="555.3" y2="509.5" class="gl"/><line x1="326.9" y1="419.2" x2="318.2" y2="172.8" class="gl"/><line x1="362.5" y1="408.3" x2="591.0" y2="493.1" class="gl"/><line x1="362.5" y1="408.3" x2="356.1" y2="168.5" class="gl"/><line x1="393.3" y1="398.8" x2="621.5" y2="479.1" class="gl"/><line x1="393.3" y1="398.8" x2="388.9" y2="164.7" class="gl"/><line x1="425.3" y1="389.0" x2="653.0" y2="464.6" class="gl"/><line x1="425.3" y1="389.0" x2="422.8" y2="160.8" class="gl"/><line x1="453.1" y1="380.4" x2="679.9" y2="452.2" class="gl"/><line x1="453.1" y1="380.4" x2="452.2" y2="157.5" class="gl"/><line x1="470.0" y1="548.7" x2="696.2" y2="444.7" class="gl ge"/><text x="489.5" y="556.4" class="tick">3B</text><text x="530.4" y="537.6" class="tick">10B</text><text x="565.3" y="521.5" class="tick">30B</text><text x="601.0" y="505.1" class="tick">100B</text><text x="631.5" y="491.1" class="tick">300B</text><text x="663.0" y="476.6" class="tick">1T</text><text x="689.9" y="464.2" class="tick">3T</text><text x="637.3" y="557.4" class="title">Parameters, log scale</text></g><g class="labels" aria-hidden="true"><text x="247.4" y="465.2" class="tick">Aug '26</text><text x="298.9" y="488.8" class="tick">Sep '26</text><text x="356.4" y="515.3" class="tick">Oct '26</text><text x="421.1" y="545.0" class="tick">Nov '26</text><text x="234.8" y="448.7" class="tick te">0</text><text x="232.1" y="401.4" class="tick te">20</text><text x="229.4" y="352.9" class="tick te">40</text><text x="226.6" y="303.2" class="tick te">60</text><text x="223.7" y="252.4" class="tick te">80</text><text x="220.8" y="200.2" class="tick te">100</text><text x="322.8" y="546.1" class="title">Release date</text><text x="217.3" y="146.2" class="title">Mean % of frontier, 5 benchmarks</text></g><g class="marks"><g class="pt" data-i="0" tabindex="0" role="img" aria-label="DeepSeek V4 Pro 0813, DeepSeek: mean 58.6 percent of frontier"><circle cx="451.4" cy="265.4" r="4.8" fill="#008300" class="dot"/><circle cx="451.4" cy="265.4" r="11" class="hit"/></g><g class="pt" data-i="2" tabindex="0" role="img" aria-label="GLM-5.3, Z.ai: mean 66.1 percent of frontier"><circle cx="432.8" cy="253.2" r="4.9" fill="#4a3aa7" class="dot"/><circle cx="432.8" cy="253.2" r="11" class="hit"/></g><g class="pt" data-i="17" tabindex="0" role="img" aria-label="Claude Fable 5.1, Anthropic: mean 86.3 percent of frontier"><circle cx="509.0" cy="205.4" r="4.0" class="dot dim" style="opacity:0.500"/><circle cx="509.0" cy="205.4" r="11" class="hit"/></g><g class="pt" data-i="6" tabindex="0" role="img" aria-label="Qwen3.8-Max, Alibaba: mean 68.5 percent of frontier"><circle cx="497.7" cy="248.3" r="4.9" fill="#2a78d6" class="dot"/><circle cx="497.7" cy="248.3" r="11" class="hit"/></g><g class="pt" data-i="18" tabindex="0" role="img" aria-label="GPT-6 Astra, OpenAI: mean 91.1 percent of frontier"><circle cx="509.1" cy="195.4" r="4.0" class="dot dim" style="opacity:0.500"/><circle cx="509.1" cy="195.4" r="11" class="hit"/></g><g class="pt" data-i="5" tabindex="0" role="img" aria-label="Tencent Hy4 preview, Tencent: mean 73.8 percent of frontier"><circle cx="458.1" cy="240.4" r="5.0" fill="#eda100" class="dot"/><circle cx="458.1" cy="240.4" r="11" class="hit"/></g><g class="pt" data-i="3" tabindex="0" role="img" aria-label="GLM-5.3-Flash, Z.ai: mean 61.4 percent of frontier"><circle cx="430.0" cy="273.2" r="5.1" fill="#4a3aa7" class="dot"/><circle cx="430.0" cy="273.2" r="11" class="hit"/></g><g class="pt" data-i="20" tabindex="0" role="img" aria-label="Claude Opus 5.5, Anthropic: mean 94.5 percent of frontier"><circle cx="542.2" cy="193.3" r="4.2" class="dot dim" style="opacity:0.500"/><circle cx="542.2" cy="193.3" r="11" class="hit"/></g><g class="pt" data-i="4" tabindex="0" role="img" aria-label="Qwen3.8-Flash-Next, Alibaba: mean 54.7 percent of frontier"><circle cx="413.7" cy="292.4" r="5.1" fill="#2a78d6" class="dot"/><circle cx="413.7" cy="292.4" r="11" class="hit"/></g><g class="pt" data-i="21" tabindex="0" role="img" aria-label="GPT-6.1 Sol, OpenAI: mean 88.9 percent of frontier"><circle cx="537.3" cy="207.5" r="4.2" class="dot dim" style="opacity:0.500"/><circle cx="537.3" cy="207.5" r="11" class="hit"/></g><g class="pt" data-i="19" tabindex="0" role="img" aria-label="Grok 4.7, xAI: mean 71.4 percent of frontier"><circle cx="521.5" cy="251.2" r="4.2" class="dot dim" style="opacity:0.500"/><circle cx="521.5" cy="251.2" r="11" class="hit"/></g><g class="pt" data-i="7" tabindex="0" role="img" aria-label="MiMo V2.6 Pro, Xiaomi: mean 64.3 percent of frontier"><circle cx="512.9" cy="270.5" r="5.2" fill="#eda100" class="dot"/><circle cx="512.9" cy="270.5" r="11" class="hit"/></g><g class="pt" data-i="24" tabindex="0" role="img" aria-label="Gemini 4 Argon, Google: mean 87.9 percent of frontier"><circle cx="547.4" cy="213.3" r="4.3" class="dot dim" style="opacity:0.500"/><circle cx="547.4" cy="213.3" r="11" class="hit"/></g><g class="pt" data-i="1" tabindex="0" role="img" aria-label="Qwen3.8-27B, Alibaba: mean 39.7 percent of frontier"><circle cx="336.6" cy="335.2" r="5.2" fill="#2a78d6" class="dot"/><circle cx="336.6" cy="335.2" r="11" class="hit"/></g><g class="pt" data-i="22" tabindex="0" role="img" aria-label="GPT-6 Luna, OpenAI: mean 61.9 percent of frontier"><circle cx="498.4" cy="279.5" r="4.3" class="dot dim" style="opacity:0.500"/><circle cx="498.4" cy="279.5" r="11" class="hit"/></g><g class="pt" data-i="26" tabindex="0" role="img" aria-label="Muse Wonder Full, Meta: mean 85.1 percent of frontier"><circle cx="578.4" cy="223.0" r="4.3" class="dot dim" style="opacity:0.500"/><circle cx="578.4" cy="223.0" r="11" class="hit"/></g><g class="pt" data-i="23" tabindex="0" role="img" aria-label="Claude Sonnet 5.5, Anthropic: mean 90.2 percent of frontier"><circle cx="519.2" cy="211.4" r="4.4" class="dot dim" style="opacity:0.500"/><circle cx="519.2" cy="211.4" r="11" class="hit"/></g><g class="pt" data-i="8" tabindex="0" role="img" aria-label="MiMo V2.6 Flash, Xiaomi: mean 72.1 percent of frontier"><circle cx="480.0" cy="258.8" r="5.3" fill="#eda100" class="dot"/><circle cx="480.0" cy="258.8" r="11" class="hit"/></g><g class="pt" data-i="14" tabindex="0" role="img" aria-label="Kimi K3.1 Pro, Moonshot: mean 81.6 percent of frontier"><circle cx="604.7" cy="234.9" r="5.4" fill="#e87ba4" class="dot"/><circle cx="604.7" cy="234.9" r="11" class="hit"/></g><g class="pt" data-i="25" tabindex="0" role="img" aria-label="Muse Wonder, Meta: mean 79.5 percent of frontier"><circle cx="553.9" cy="241.6" r="4.4" class="dot dim" style="opacity:0.500"/><circle cx="553.9" cy="241.6" r="11" class="hit"/></g><g class="pt" data-i="9" tabindex="0" role="img" aria-label="Ling 3.1 Flash, inclusionAI: mean 58.9 percent of frontier"><circle cx="539.2" cy="296.6" r="5.4" fill="#eda100" class="dot"/><circle cx="539.2" cy="296.6" r="11" class="hit"/></g><g class="pt" data-i="28" tabindex="0" role="img" aria-label="Gemini 4 Carbon, Google: mean 94.4 percent of frontier"><circle cx="618.4" cy="204.2" r="4.4" class="dot dim" style="opacity:0.500"/><circle cx="618.4" cy="204.2" r="11" class="hit"/></g><g class="pt" data-i="27" tabindex="0" role="img" aria-label="GPT-6.1 Terra, OpenAI: mean 84.4 percent of frontier"><circle cx="603.1" cy="230.8" r="4.5" class="dot dim" style="opacity:0.500"/><circle cx="603.1" cy="230.8" r="11" class="hit"/></g><g class="pt" data-i="12" tabindex="0" role="img" aria-label="DeepSeek V4.1 Flash 1017, DeepSeek: mean 70.8 percent of frontier"><circle cx="547.7" cy="268.9" r="5.5" fill="#008300" class="dot"/><circle cx="547.7" cy="268.9" r="11" class="hit"/></g><g class="pt" data-i="29" tabindex="0" role="img" aria-label="Claude Fable 5.2, Anthropic: mean 99.1 percent of frontier"><circle cx="654.2" cy="194.6" r="4.5" class="dot dim" style="opacity:0.500"/><circle cx="654.2" cy="194.6" r="11" class="hit"/></g><g class="pt" data-i="13" tabindex="0" role="img" aria-label="MiniMax M3.1 Flash, MiniMax: mean 60.8 percent of frontier"><circle cx="553.4" cy="298.6" r="5.6" fill="#d85a30" class="dot"/><circle cx="553.4" cy="298.6" r="11" class="hit"/></g><g class="pt" data-i="15" tabindex="0" role="img" aria-label="Inkling 2 Small, Thinking Machines: mean 48.5 percent of frontier"><circle cx="590.1" cy="333.9" r="5.6" fill="#d4537e" class="dot"/><circle cx="590.1" cy="333.9" r="11" class="hit"/></g><g class="pt" data-i="10" tabindex="0" role="img" aria-label="Nemotron 3.5 Super VL, NVIDIA: mean 41.5 percent of frontier"><circle cx="498.8" cy="352.9" r="5.6" fill="#639922" class="dot"/><circle cx="498.8" cy="352.9" r="11" class="hit"/></g><g class="pt" data-i="30" tabindex="0" role="img" aria-label="GPT-6.2 Astra, OpenAI: mean 95.7 percent of frontier"><circle cx="669.4" cy="206.5" r="4.6" class="dot dim" style="opacity:0.500"/><circle cx="669.4" cy="206.5" r="11" class="hit"/></g><g class="pt" data-i="31" tabindex="0" role="img" aria-label="GPT-6.2 Sol, OpenAI: mean 90.2 percent of frontier"><circle cx="660.2" cy="222.6" r="4.6" class="dot dim" style="opacity:0.500"/><circle cx="660.2" cy="222.6" r="11" class="hit"/></g><g class="pt" data-i="32" tabindex="0" role="img" aria-label="Gemini 4 Neon, Google: mean 95.7 percent of frontier"><circle cx="667.7" cy="207.6" r="4.6" class="dot dim" style="opacity:0.500"/><circle cx="667.7" cy="207.6" r="11" class="hit"/></g><g class="pt" data-i="11" tabindex="0" role="img" aria-label="Nemotron 3.5 Bolt, NVIDIA: mean 46.4 percent of frontier"><circle cx="484.4" cy="344.7" r="5.7" fill="#639922" class="dot"/><circle cx="484.4" cy="344.7" r="11" class="hit"/></g><g class="pt" data-i="16" tabindex="0" role="img" aria-label="Inkling 2 Mini, Thinking Machines: mean 52.0 percent of frontier"><circle cx="534.6" cy="362.1" r="6.3" fill="#d4537e" class="dot"/><circle cx="534.6" cy="362.1" r="11" class="hit"/></g></g></g>
+    </svg>
+    <div class="ibd-tip" role="status" hidden></div>
+  </div>
+  <p class="ibd-benchmarks">Mean of: Artificial Analysis Intelligence Index v5.0.1 · Vals Index · Terminal-Bench 4.0 · BenchAlign v6.0 · LiveBench 2.0 — each as % of its top scorer. Hover a point for details.</p>
+</figure>
+<script type="module">
+/* Intelligence density with sparsity — 3D scatter as inline SVG, TM-style.
+   Shared between the Node build step (pre-renders the final static view) and
+   the browser runtime (scroll-triggered 2D → 3D → sparsity choreography).
+   No dependencies. */
+
+const PUB = [{"n":"DeepSeek V4 Pro 0813","lab":"DeepSeek","c":"#008300","d":"2026-08-13","t":12.39,"p":1600,"ap":49,"raw":{"AA v5.0.1":23,"Vals Index":52.97,"BenchAlign v6.0":61.6},"fr":{"AA v5.0.1":35.4,"Vals Index":74.3,"BenchAlign v6.0":66.1},"m":58.6,"lo":35.4,"hi":74.3,"k":3,"sp":32.7},{"n":"Qwen3.8-27B","lab":"Alibaba","c":"#2a78d6","d":"2026-08-14","t":12.42,"p":27,"ap":27,"raw":{"AA v5.0.1":20,"Terminal-Bench 4.0":5.6,"BenchAlign v6.0":54.1,"LiveBench 2.0":54.0},"fr":{"AA v5.0.1":30.8,"Terminal-Bench 4.0":8.2,"BenchAlign v6.0":58.0,"LiveBench 2.0":61.8},"m":39.7,"lo":8.2,"hi":61.8,"k":4,"sp":1.0},{"n":"GLM-5.3","lab":"Z.ai","c":"#4a3aa7","d":"2026-08-14","t":12.42,"p":753,"ap":40,"raw":{"AA v5.0.1":32,"Vals Index":59.85,"Terminal-Bench 4.0":43.4,"BenchAlign v6.0":63.5},"fr":{"AA v5.0.1":49.2,"Vals Index":83.9,"Terminal-Bench 4.0":63.2,"BenchAlign v6.0":68.1},"m":66.1,"lo":49.2,"hi":83.9,"k":4,"sp":18.8},{"n":"GLM-5.3-Flash","lab":"Z.ai","c":"#4a3aa7","d":"2026-08-26","t":12.81,"p":320,"ap":18,"raw":{"AA v5.0.1":28,"Vals Index":50.86,"Terminal-Bench 4.0":41.8,"BenchAlign v6.0":57.9,"LiveBench 2.0":60.7},"fr":{"AA v5.0.1":43.1,"Vals Index":71.3,"Terminal-Bench 4.0":60.8,"BenchAlign v6.0":62.1,"LiveBench 2.0":69.5},"m":61.4,"lo":43.1,"hi":71.3,"k":5,"sp":17.8},{"n":"Qwen3.8-Flash-Next","lab":"Alibaba","c":"#2a78d6","d":"2026-08-26","t":12.81,"p":180,"ap":6,"raw":{"AA v5.0.1":29,"BenchAlign v6.0":60.4},"fr":{"AA v5.0.1":44.6,"BenchAlign v6.0":64.8},"m":54.7,"lo":44.6,"hi":64.8,"k":2,"sp":30.0},{"n":"Tencent Hy4 preview","lab":"Tencent","c":"#eda100","d":"2026-08-28","t":12.88,"p":770,"ap":49,"raw":{"Vals Index":53.21,"BenchAlign v6.0":68.1},"fr":{"Vals Index":74.6,"BenchAlign v6.0":73.1},"m":73.8,"lo":73.1,"hi":74.6,"k":2,"sp":15.7},{"n":"Qwen3.8-Max","lab":"Alibaba","c":"#2a78d6","d":"2026-09-02","t":13.04,"p":2446,"ap":95,"raw":{"AA v5.0.1":33.5,"Vals Index":59.05,"BenchAlign v6.0":65.3,"LiveBench 2.0":60.9},"fr":{"AA v5.0.1":51.5,"Vals Index":82.8,"BenchAlign v6.0":70.1,"LiveBench 2.0":69.7},"m":68.5,"lo":51.5,"hi":82.8,"k":4,"sp":25.7},{"n":"MiMo V2.6 Pro","lab":"Xiaomi","c":"#eda100","d":"2026-09-22","t":13.7,"p":1020,"ap":42,"raw":{"AA v5.0.1":30,"Vals Index":57.81,"Terminal-Bench 4.0":34.9,"BenchAlign v6.0":63.0,"LiveBench 2.0":66.1},"fr":{"AA v5.0.1":46.2,"Vals Index":81.1,"Terminal-Bench 4.0":50.8,"BenchAlign v6.0":67.6,"LiveBench 2.0":75.6},"m":64.3,"lo":46.2,"hi":81.1,"k":5,"sp":24.3},{"n":"MiMo V2.6 Flash","lab":"Xiaomi","c":"#eda100","d":"2026-09-22","t":13.7,"p":309,"ap":15,"raw":{"Vals Index":54.83,"BenchAlign v6.0":62.6},"fr":{"Vals Index":76.9,"BenchAlign v6.0":67.2},"m":72.1,"lo":67.2,"hi":76.9,"k":2,"sp":20.6},{"n":"Ling 3.1 Flash","lab":"inclusionAI","c":"#eda100","d":"2026-10-13","t":14.39,"p":560,"ap":25,"raw":{"AA v5.0.1":30,"BenchAlign v6.0":66.6},"fr":{"AA v5.0.1":46.2,"BenchAlign v6.0":71.5},"m":58.9,"lo":46.2,"hi":71.5,"k":2,"sp":22.4},{"n":"Nemotron 3.5 Super VL","lab":"NVIDIA","c":"#639922","d":"2026-10-15","t":14.45,"p":120,"ap":12,"raw":{"AA v5.0.1":14,"Vals Index":29.78,"BenchAlign v6.0":45.8,"LiveBench 2.0":47.0},"fr":{"AA v5.0.1":21.5,"Vals Index":41.8,"BenchAlign v6.0":49.1,"LiveBench 2.0":53.8},"m":41.5,"lo":21.5,"hi":53.8,"k":4,"sp":10.0},{"n":"Nemotron 3.5 Bolt","lab":"NVIDIA","c":"#639922","d":"2026-10-15","t":14.45,"p":74,"ap":9,"raw":{"BenchAlign v6.0":43.2},"fr":{"BenchAlign v6.0":46.4},"m":46.4,"lo":46.4,"hi":46.4,"k":1,"sp":8.2},{"n":"DeepSeek V4.1 Flash 1017","lab":"DeepSeek","c":"#008300","d":"2026-10-17","t":14.52,"p":552,"ap":16,"raw":{"AA v5.0.1":33,"Vals Index":61.26,"Terminal-Bench 4.0":42.3,"BenchAlign v6.0":70.0,"LiveBench 2.0":70.3},"fr":{"AA v5.0.1":50.8,"Vals Index":85.9,"Terminal-Bench 4.0":61.6,"BenchAlign v6.0":75.1,"LiveBench 2.0":80.4},"m":70.8,"lo":50.8,"hi":85.9,"k":5,"sp":34.5},{"n":"MiniMax M3.1 Flash","lab":"MiniMax","c":"#d85a30","d":"2026-10-23","t":14.72,"p":428,"ap":23,"raw":{"AA v5.0.1":29,"Vals Index":53.78,"Terminal-Bench 4.0":38.1,"BenchAlign v6.0":51.9,"LiveBench 2.0":63.7},"fr":{"AA v5.0.1":44.6,"Vals Index":75.4,"Terminal-Bench 4.0":55.5,"BenchAlign v6.0":55.7,"LiveBench 2.0":72.9},"m":60.8,"lo":44.6,"hi":75.4,"k":5,"sp":18.6},{"n":"Kimi K3.1 Pro","lab":"Moonshot","c":"#e87ba4","d":"2026-10-23","t":14.72,"p":2800,"ap":104,"raw":{"AA v5.0.1":46,"Vals Index":62.52,"Terminal-Bench 4.0":65.7,"BenchAlign v6.0":70.0,"LiveBench 2.0":68.7},"fr":{"AA v5.0.1":70.8,"Vals Index":87.7,"Terminal-Bench 4.0":95.6,"BenchAlign v6.0":75.1,"LiveBench 2.0":78.6},"m":81.6,"lo":70.8,"hi":95.6,"k":5,"sp":26.9},{"n":"Inkling 2 Small","lab":"Thinking Machines","c":"#d4537e","d":"2026-11-05","t":15.14,"p":594,"ap":17,"raw":{"AA v5.0.1":31,"Vals Index":56.08,"Terminal-Bench 4.0":13.1},"fr":{"AA v5.0.1":47.7,"Vals Index":78.6,"Terminal-Bench 4.0":19.1},"m":48.5,"lo":19.1,"hi":78.6,"k":3,"sp":34.9},{"n":"Inkling 2 Mini","lab":"Thinking Machines","c":"#d4537e","d":"2026-11-20","t":15.64,"p":26.4,"ap":3.4,"raw":{"AA v5.0.1":20,"Vals Index":46.46,"BenchAlign v6.0":56.0},"fr":{"AA v5.0.1":30.8,"Vals Index":65.2,"BenchAlign v6.0":60.1},"m":52.0,"lo":30.8,"hi":65.2,"k":3,"sp":7.8}];
+const INF = [{"n":"Claude Fable 5.1","lab":"Anthropic","c":null,"d":"2026-09-01","t":13.01,"p":4000,"ap":null,"raw":{"AA v5.0.1":49.7,"LiveBench 2.0":84.0},"fr":{"AA v5.0.1":76.5,"LiveBench 2.0":96.1},"m":86.3,"lo":76.5,"hi":96.1,"k":2,"sp":null},{"n":"GPT-6 Astra","lab":"OpenAI","c":null,"d":"2026-09-03","t":13.07,"p":3500,"ap":null,"raw":{"AA v5.0.1":56.9,"Vals Index":65.02,"BenchAlign v6.0":83.2,"LiveBench 2.0":84.3},"fr":{"AA v5.0.1":87.5,"Vals Index":91.2,"BenchAlign v6.0":89.3,"LiveBench 2.0":96.5},"m":91.1,"lo":87.5,"hi":96.5,"k":4,"sp":null},{"n":"Grok 4.7","lab":"xAI","c":null,"d":"2026-09-21","t":13.67,"p":1500,"ap":null,"raw":{"AA v5.0.1":35.3,"Vals Index":58.62,"LiveBench 2.0":67.9},"fr":{"AA v5.0.1":54.3,"Vals Index":82.2,"LiveBench 2.0":77.7},"m":71.4,"lo":54.3,"hi":82.2,"k":3,"sp":null},{"n":"Claude Opus 5.5","lab":"Anthropic","c":null,"d":"2026-09-22","t":13.7,"p":3000,"ap":null,"raw":{"AA v5.0.1":58.4,"Vals Index":70.14,"Terminal-Bench 4.0":68.7,"BenchAlign v6.0":82.7,"LiveBench 2.0":83.4},"fr":{"AA v5.0.1":89.8,"Vals Index":98.4,"Terminal-Bench 4.0":100.0,"BenchAlign v6.0":88.7,"LiveBench 2.0":95.4},"m":94.5,"lo":88.7,"hi":100.0,"k":5,"sp":null},{"n":"GPT-6.1 Sol","lab":"OpenAI","c":null,"d":"2026-09-22","t":13.7,"p":2500,"ap":null,"raw":{"AA v5.0.1":54.6,"Vals Index":63.94,"LiveBench 2.0":81.2},"fr":{"AA v5.0.1":84.0,"Vals Index":89.7,"LiveBench 2.0":92.9},"m":88.9,"lo":84.0,"hi":92.9,"k":3,"sp":null},{"n":"GPT-6 Luna","lab":"OpenAI","c":null,"d":"2026-09-22","t":13.7,"p":600,"ap":null,"raw":{"AA v5.0.1":28,"Vals Index":52.32,"LiveBench 2.0":60.4},"fr":{"AA v5.0.1":43.1,"Vals Index":73.4,"LiveBench 2.0":69.1},"m":61.9,"lo":43.1,"hi":73.4,"k":3,"sp":null},{"n":"Claude Sonnet 5.5","lab":"Anthropic","c":null,"d":"2026-09-28","t":13.9,"p":800,"ap":null,"raw":{"AA v5.0.1":54.2,"Vals Index":70.85,"LiveBench 2.0":76.8},"fr":{"AA v5.0.1":83.4,"Vals Index":99.4,"LiveBench 2.0":87.9},"m":90.2,"lo":83.4,"hi":99.4,"k":3,"sp":null},{"n":"Gemini 4 Argon","lab":"Google","c":null,"d":"2026-09-30","t":13.96,"p":2000,"ap":null,"raw":{"AA v5.0.1":50.4,"Vals Index":69.39,"LiveBench 2.0":77.7},"fr":{"AA v5.0.1":77.5,"Vals Index":97.3,"LiveBench 2.0":88.9},"m":87.9,"lo":77.5,"hi":97.3,"k":3,"sp":null},{"n":"Muse Wonder","lab":"Meta","c":null,"d":"2026-10-12","t":14.36,"p":1000,"ap":null,"raw":{"AA v5.0.1":43.3,"Vals Index":64.88,"LiveBench 2.0":70.7},"fr":{"AA v5.0.1":66.6,"Vals Index":91.0,"LiveBench 2.0":80.9},"m":79.5,"lo":66.6,"hi":91.0,"k":3,"sp":null},{"n":"Muse Wonder Full","lab":"Meta","c":null,"d":"2026-10-12","t":14.36,"p":2500,"ap":null,"raw":{"AA v5.0.1":49.7,"Vals Index":66.79},"fr":{"AA v5.0.1":76.5,"Vals Index":93.7},"m":85.1,"lo":76.5,"hi":93.7,"k":2,"sp":null},{"n":"GPT-6.1 Terra","lab":"OpenAI","c":null,"d":"2026-10-26","t":14.82,"p":2000,"ap":null,"raw":{"AA v5.0.1":51.0,"Vals Index":60.54,"LiveBench 2.0":78.6},"fr":{"AA v5.0.1":78.5,"Vals Index":84.9,"LiveBench 2.0":89.9},"m":84.4,"lo":78.5,"hi":89.9,"k":3,"sp":null},{"n":"Gemini 4 Carbon","lab":"Google","c":null,"d":"2026-10-28","t":14.88,"p":3000,"ap":null,"raw":{"AA v5.0.1":59.4,"Vals Index":70.45,"Terminal-Bench 4.0":63.1,"BenchAlign v6.0":88.1,"LiveBench 2.0":83.3},"fr":{"AA v5.0.1":91.4,"Vals Index":98.8,"Terminal-Bench 4.0":91.8,"BenchAlign v6.0":94.5,"LiveBench 2.0":95.3},"m":94.4,"lo":91.4,"hi":98.8,"k":5,"sp":null},{"n":"Claude Fable 5.2","lab":"Anthropic","c":null,"d":"2026-11-09","t":15.28,"p":4000,"ap":null,"raw":{"AA v5.0.1":65,"Vals Index":71.31,"Terminal-Bench 4.0":67.6,"BenchAlign v6.0":93.2,"LiveBench 2.0":84.9},"fr":{"AA v5.0.1":100.0,"Vals Index":100.0,"Terminal-Bench 4.0":98.4,"BenchAlign v6.0":100.0,"LiveBench 2.0":97.1},"m":99.1,"lo":97.1,"hi":100.0,"k":5,"sp":null},{"n":"GPT-6.2 Astra","lab":"OpenAI","c":null,"d":"2026-11-17","t":15.54,"p":3500,"ap":null,"raw":{"AA v5.0.1":62,"Vals Index":67.66,"Terminal-Bench 4.0":64.1,"BenchAlign v6.0":91.1,"LiveBench 2.0":84.9},"fr":{"AA v5.0.1":95.4,"Vals Index":94.9,"Terminal-Bench 4.0":93.3,"BenchAlign v6.0":97.7,"LiveBench 2.0":97.1},"m":95.7,"lo":93.3,"hi":97.7,"k":5,"sp":null},{"n":"GPT-6.2 Sol","lab":"OpenAI","c":null,"d":"2026-11-17","t":15.54,"p":2500,"ap":null,"raw":{"AA v5.0.1":57,"Vals Index":66.06,"BenchAlign v6.0":82.6,"LiveBench 2.0":80.3},"fr":{"AA v5.0.1":87.7,"Vals Index":92.6,"BenchAlign v6.0":88.6,"LiveBench 2.0":91.9},"m":90.2,"lo":87.7,"hi":92.6,"k":4,"sp":null},{"n":"Gemini 4 Neon","lab":"Google","c":null,"d":"2026-11-18","t":15.57,"p":3000,"ap":null,"raw":{"AA v5.0.1":61,"Vals Index":70.87,"Terminal-Bench 4.0":63.6,"BenchAlign v6.0":86.3,"LiveBench 2.0":87.4},"fr":{"AA v5.0.1":93.8,"Vals Index":99.4,"Terminal-Bench 4.0":92.6,"BenchAlign v6.0":92.6,"LiveBench 2.0":100.0},"m":95.7,"lo":92.6,"hi":100.0,"k":5,"sp":null}];
+
+const MODELS = PUB.map(m => ({ ...m, inf: false })).concat(INF.map(m => ({ ...m, inf: true })));
+
+/* ---------- scales ---------- */
+
+const X0 = 12.1, X1 = 15.9;                        // release date
+const Y0 = Math.log10(2.3), Y1 = Math.log10(6000); // log params (reaches 3.4B active)
+const Z0 = 0, Z1 = 105;                            // mean % of frontier
+
+const W = 940, H = 640, S = 330, CXP = 470, CYP = 318;
+
+const nx = t => (t - X0) / (X1 - X0) - 0.5;
+const ny = p => (Math.log10(p) - Y0) / (Y1 - Y0) - 0.5;
+const nz = m => ((m - Z0) / (Z1 - Z0) - 0.5) * 0.82;
+
+/* camera states: flat 2D front view -> tilted perspective view */
+const YAW_FLAT = -Math.PI / 2, PITCH_FLAT = 0;
+const YAW_3D = -Math.PI / 4, PITCH_3D = 0.26;
+const PK = 0.3; // perspective strength at persp=1
+
+const XT = [[12.3, "Aug '26"], [13.3, "Sep '26"], [14.3, "Oct '26"], [15.3, "Nov '26"]];
+const YT = [[3, "3B"], [10, "10B"], [30, "30B"], [100, "100B"], [300, "300B"], [1000, "1T"], [3000, "3T"]];
+const ZT = [[0, "0"], [20, "20"], [40, "40"], [60, "60"], [80, "80"], [100, "100"]];
+
+/* ---------- rendering ---------- */
+
+const f1 = v => v.toFixed(1);
+const f3 = v => v.toFixed(3);
+
+function renderScene(a, b, persp, modeT) {
+  const ca = Math.cos(a), sa = Math.sin(a), cb = Math.cos(b), sb = Math.sin(b);
+  const zf = S * (1 + 0.55 * (1 - persp)); // flat 2D view fills the canvas, pulls back into 3D
+  const P = (x, y, z) => {
+    const u = -x * sa + y * ca;
+    const v = -x * sb * ca - y * sb * sa + z * cb;
+    const d = x * cb * ca + y * cb * sa + z * sb;
+    const f = 1 / (1 - persp * PK * d);
+    return [CXP + zf * u * f, CYP - zf * v * f, d, f];
+  };
+  const line = (p, q, cls, style) =>
+    `<line x1="${f1(p[0])}" y1="${f1(p[1])}" x2="${f1(q[0])}" y2="${f1(q[1])}" class="${cls}"${style || ""}/>`;
+
+  let grid = "", labels = "", fade = "";
+
+  // grid panes: far walls x=X0 and y=Y1, floor z=Z0 (camera stays at +x/−y octant)
+  for (const [xt] of XT) {
+    grid += line(P(nx(xt), -0.5, nz(Z0)), P(nx(xt), 0.5, nz(Z0)), "gl");
+    grid += line(P(nx(xt), 0.5, nz(Z0)), P(nx(xt), 0.5, nz(Z1)), "gl");
+  }
+  for (const [zt] of ZT) {
+    grid += line(P(-0.5, -0.5, nz(zt)), P(-0.5, 0.5, nz(zt)), "gl");
+    grid += line(P(-0.5, 0.5, nz(zt)), P(0.5, 0.5, nz(zt)), "gl");
+  }
+  // parameter-axis grid only matters once the third dimension is visible
+  for (const [yt] of YT) {
+    fade += line(P(-0.5, ny(yt), nz(Z0)), P(0.5, ny(yt), nz(Z0)), "gl");
+    fade += line(P(-0.5, ny(yt), nz(Z0)), P(-0.5, ny(yt), nz(Z1)), "gl");
+  }
+  grid += line(P(-0.5, -0.5, nz(Z0)), P(0.5, -0.5, nz(Z0)), "gl ge");
+  grid += line(P(-0.5, -0.5, nz(Z0)), P(-0.5, -0.5, nz(Z1)), "gl ge");
+  fade += line(P(0.5, -0.5, nz(Z0)), P(0.5, 0.5, nz(Z0)), "gl ge");
+
+  // tick labels: dates on the front-bottom edge, capability up the left edge
+  for (const [xt, lab] of XT) {
+    const p = P(nx(xt), -0.5, nz(Z0));
+    labels += `<text x="${f1(p[0] - 6)}" y="${f1(p[1] + 16)}" class="tick">${lab}</text>`;
+  }
+  for (const [zt, lab] of ZT) {
+    const p = P(-0.5, -0.5, nz(zt));
+    labels += `<text x="${f1(p[0] - 9)}" y="${f1(p[1] + 4)}" class="tick te">${lab}</text>`;
+  }
+  const tx = P(nx(13.9), -0.56, nz(Z0) - 0.09);
+  labels += `<text x="${f1(tx[0])}" y="${f1(tx[1] + 22)}" class="title">Release date</text>`;
+  const tz = P(-0.5, -0.5, nz(Z1) + 0.09);
+  labels += `<text x="${f1(tz[0] - 10)}" y="${f1(tz[1] - 6)}" class="title">Mean % of frontier, 5 benchmarks</text>`;
+  // parameter ticks appear with the rotation
+  for (const [yt, lab] of YT) {
+    const p = P(0.5, ny(yt), nz(Z0));
+    fade += `<text x="${f1(p[0] + 10)}" y="${f1(p[1] + 12)}" class="tick">${lab}</text>`;
+  }
+  const ty = P(0.62, ny(120), nz(Z0) - 0.09);
+  fade += `<text x="${f1(ty[0] + 8)}" y="${f1(ty[1] + 24)}" class="title">Parameters, log scale</text>`;
+
+  // markers, far-to-near. modeT slides each MoE dot from its total-parameter
+  // position (0) to its active-parameter position (1), trailing a thin tail
+  // back to the total anchor. Dense models don't move; closed models fade.
+  const pts = MODELS.map((m, i) => {
+    const x = nx(m.t), yTot = ny(m.p);
+    const anchor = P(x, yTot, nz(m.m));
+    const moves = !m.inf && m.ap !== m.p;
+    const dot = moves ? P(x, yTot + (ny(m.ap) - yTot) * modeT, nz(m.m)) : anchor;
+    return { m, i, dot, anchor, moves };
+  }).sort((u, v) => u.dot[2] - v.dot[2]);
+
+  let marks = "";
+  for (const { m, i, dot, anchor, moves } of pts) {
+    const rDot = (m.inf ? 4.5 : 5.5) * dot[3];
+    let g = "";
+    if (moves && modeT > 0.02) g += line(anchor, dot, "tail", ` stroke="${m.c}"`);
+    const dim = m.inf ? ` style="opacity:${f3(0.5 - 0.32 * modeT)}"` : "";
+    g += `<circle cx="${f1(dot[0])}" cy="${f1(dot[1])}" r="${f1(rDot)}"${m.inf ? "" : ` fill="${m.c}"`} class="dot${m.inf ? " dim" : ""}"${dim}/>`;
+    g += `<circle cx="${f1(dot[0])}" cy="${f1(dot[1])}" r="11" class="hit"/>`;
+    marks += `<g class="pt" data-i="${i}" tabindex="0" role="img" aria-label="${m.n}, ${m.lab}: mean ${m.m.toFixed(1)} percent of frontier">${g}</g>`;
+  }
+  return `<g class="grid" aria-hidden="true">${grid}</g>` +
+    `<g class="grid gfade" aria-hidden="true" style="opacity:${f3(persp)}">${fade}</g>` +
+    `<g class="labels" aria-hidden="true">${labels}</g>` +
+    `<g class="marks">${marks}</g>`;
+}
+
+/* ---------- browser runtime ---------- */
+
+function initRuntime() {
+  const root = document.querySelector("[data-ibd-root]");
+  if (!root) return;
+  const svg = root.querySelector("svg");
+  const scene = svg.querySelector("[data-scene]");
+  const tip = root.querySelector(".ibd-tip");
+  const btn = root.querySelector(".ibd-playback");
+  const reduced = window.matchMedia("(prefers-reduced-motion: reduce)");
+  const ease = t => (t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2);
+  const easeOut = t => 1 - Math.pow(1 - t, 3);
+
+  const inputs = [...root.querySelectorAll(".ibd-seg input")];
+  let raf = 0, timer = 0, playing = false, played = false, modeT = 0;
+  const cam = { a: YAW_3D, b: PITCH_3D };
+  const drawFlat = () => { scene.innerHTML = renderScene(YAW_FLAT, PITCH_FLAT, 0, 0); };
+  const drawFinal = () => { scene.innerHTML = renderScene(cam.a, cam.b, 1, modeT); };
+  const setToggle = on => inputs.forEach(el => { el.disabled = !on; });
+  const setReady = () => { played = true; root.classList.add("ibd-ready"); setToggle(true); };
+
+  const setState = s => {
+    if (!btn) return;
+    btn.dataset.playback = s;
+    btn.disabled = s === "playing";
+    btn.setAttribute("aria-label", s === "finished" ? "Replay the figure" :
+      s === "playing" ? "Playing" : "Play the figure");
+    btn.title = btn.getAttribute("aria-label");
+  };
+
+  const tween = (dur, fn, done) => {
+    const t0 = performance.now();
+    const step = now => {
+      const t = Math.min(1, (now - t0) / dur);
+      fn(t);
+      if (t < 1) raf = requestAnimationFrame(step);
+      else if (done) done();
+    };
+    raf = requestAnimationFrame(step);
+  };
+
+  const play = () => {
+    if (playing) return;
+    if (reduced.matches) { drawFinal(); setState("finished"); setReady(); return; }
+    playing = true;
+    cam.a = YAW_3D; cam.b = PITCH_3D;
+    setState("playing");
+    setToggle(false);
+    hideTip();
+    drawFlat();
+    // after a beat, rotate into the third dimension; the parameter toggle
+    // and free orbit take over from there
+    timer = window.setTimeout(() => {
+      tween(1700, t => {
+        const e = ease(t);
+        scene.innerHTML = renderScene(
+          YAW_FLAT + (YAW_3D - YAW_FLAT) * e,
+          PITCH_FLAT + (PITCH_3D - PITCH_FLAT) * e, e, modeT * e);
+      }, () => { playing = false; setState("finished"); setReady(); });
+    }, 500);
+  };
+
+  /* free orbit with the cursor once the intro has played */
+  let drag = null;
+  svg.addEventListener("pointerdown", e => {
+    if (!played || playing) return;
+    drag = { x: e.clientX, y: e.clientY, a: cam.a, b: cam.b };
+    svg.setPointerCapture(e.pointerId);
+    root.classList.add("ibd-grabbing");
+    hideTip();
+  });
+  svg.addEventListener("pointermove", e => {
+    if (!drag) return;
+    cam.a = Math.max(YAW_3D - 1.0, Math.min(YAW_3D + 1.0, drag.a - (e.clientX - drag.x) * 0.005));
+    cam.b = Math.max(0.05, Math.min(1.1, drag.b + (e.clientY - drag.y) * 0.004));
+    cancelAnimationFrame(raf);
+    raf = requestAnimationFrame(drawFinal);
+  });
+  const endDrag = () => { drag = null; root.classList.remove("ibd-grabbing"); };
+  svg.addEventListener("pointerup", endDrag);
+  svg.addEventListener("pointercancel", endDrag);
+
+  /* total ↔ active parameter toggle: the dot glides along the parameter
+     axis, trailing a thin tail back to its total-parameter anchor */
+  inputs.forEach(el => el.addEventListener("change", () => {
+    const target = el.value === "active" ? 1 : 0;
+    cancelAnimationFrame(raf);
+    if (reduced.matches) { modeT = target; drawFinal(); return; }
+    const from = modeT;
+    tween(650, t => {
+      modeT = from + (target - from) * easeOut(t);
+      drawFinal();
+    });
+  }));
+
+  const stop = () => {
+    window.clearTimeout(timer);
+    cancelAnimationFrame(raf);
+    playing = false;
+  };
+
+  /* tooltips (event delegation — marks are re-created each frame) */
+  const fp = p => (p >= 1000 ? (p / 1000).toFixed(1) + "T" : (p < 100 ? p.toFixed(1) : p.toFixed(0)) + "B");
+  const hov = m => {
+    let s = `<b>${m.n}</b> — ${m.lab}<br>${m.d}<br>` +
+      (m.inf ? `~${fp(m.p)} total (inferred)` : `${fp(m.p)} total / ${fp(m.ap)} active · ${m.sp}× sparse`) +
+      `<br>mean ${m.m.toFixed(1)}% of frontier`;
+    s += m.k > 1 ? ` (${m.lo.toFixed(1)}–${m.hi.toFixed(1)} across ${m.k})` : " (1 benchmark)";
+    for (const b in m.raw) s += `<br>&nbsp;&nbsp;${b}: ${m.raw[b]} → ${m.fr[b].toFixed(1)}%`;
+    return s;
+  };
+  const showTip = g => {
+    const m = MODELS[+g.dataset.i];
+    const dot = g.querySelector(".dot");
+    tip.innerHTML = hov(m);
+    tip.hidden = false;
+    const rb = root.getBoundingClientRect(), db = dot.getBoundingClientRect();
+    const x = db.left - rb.left + db.width / 2, y = db.top - rb.top;
+    tip.style.left = Math.max(8, Math.min(rb.width - tip.offsetWidth - 8, x - tip.offsetWidth / 2)) + "px";
+    tip.style.top = (y < tip.offsetHeight + 16 ? y + 18 : y - tip.offsetHeight - 10) + "px";
+    g.classList.add("hot");
+  };
+  const hideTip = () => {
+    tip.hidden = true;
+    svg.querySelectorAll(".pt.hot").forEach(g => g.classList.remove("hot"));
+  };
+  svg.addEventListener("pointerover", e => {
+    const g = e.target.closest(".pt");
+    if (g && !playing && !drag) showTip(g);
+  });
+  svg.addEventListener("pointerout", e => {
+    if (!e.relatedTarget || !e.relatedTarget.closest(".pt")) hideTip();
+  });
+  svg.addEventListener("focusin", e => { const g = e.target.closest(".pt"); if (g) showTip(g); });
+  svg.addEventListener("focusout", hideTip);
+
+  if (btn) btn.addEventListener("click", () => { stop(); playing = false; play(); });
+  reduced.addEventListener("change", () => { if (reduced.matches) { stop(); drawFinal(); setState("finished"); } });
+
+  root.classList.add("ibd-js");
+
+  /* debug hooks for build-time screenshots */
+  if (location.hash === "#flat") { drawFlat(); setState("paused"); return; }
+  if (location.hash === "#final" || location.hash === "#active") {
+    if (location.hash === "#active") { modeT = 1; const a = inputs.find(el => el.value === "active"); if (a) a.checked = true; }
+    drawFinal(); setState("finished"); setReady(); return;
+  }
+
+  if (reduced.matches) { drawFinal(); setState("finished"); setReady(); return; }
+
+  // start flat; play once when the reader has scrolled the figure well into view
+  drawFlat();
+  setState("paused");
+  if ("IntersectionObserver" in window) {
+    const io = new IntersectionObserver(entries => {
+      if (played || playing) return;
+      if (entries.some(e => e.isIntersecting && e.intersectionRatio >= 0.65)) {
+        io.disconnect();
+        play();
+      }
+    }, { threshold: 0.65, rootMargin: "0px 0px -10% 0px" });
+    io.observe(root);
+  } else {
+    play();
+  }
+}
+
+if (typeof document !== "undefined") initRuntime();
+if (typeof module !== "undefined") module.exports = { renderScene, W, H, YAW_3D, PITCH_3D };
+
+</script>
+</div>
